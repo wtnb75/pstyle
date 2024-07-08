@@ -1,7 +1,6 @@
 import click
 import sqlparse
 from sqlparse.tokens import Token
-import re
 from typing import Any, Union, Callable
 import json
 from logging import getLogger
@@ -96,7 +95,8 @@ class Pstyle:
             return "?"
         return token.value
 
-    def do_any2any(self, operation: str, fn1: Callable, args: Union[tuple, dict], arg_initializer=dict) -> tuple[str, Union[tuple, dict]]:
+    def do_any2any(self, operation: str, fn1: Callable, args: Union[tuple, dict],
+                   arg_initializer=dict) -> tuple[str, Union[tuple, dict]]:
         resarg: Union[list, dict] = arg_initializer()
         resop = []
         for sql in self.parse_flatten(operation):
