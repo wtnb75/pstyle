@@ -10,6 +10,7 @@ class TestConvert(unittest.TestCase):
     def tearDown(self):
         pass
 
+    # any to any
     testdata_map = [[
         ("qmark", "SELECT * FROM tbl1 WHERE id=?", (10,)),
         ("format", "SELECT * FROM tbl1 WHERE id=%s", (10,)),
@@ -17,6 +18,7 @@ class TestConvert(unittest.TestCase):
         ("numeric", "SELECT * FROM tbl1 WHERE id=:1", (10,)),
         ("named", "SELECT * FROM tbl1 WHERE id=:arg0", {"arg0": 10}),
     ]]
+    # [0] -> [1:]
     testdata_map2 = [[
         ("pyformat", "SELECT * FROM tbl1 WHERE id=%(name)s", {"name": "hello"}),
         ("named", "SELECT * FROM tbl1 WHERE id=:name", {"name": "hello"}),
@@ -29,6 +31,13 @@ class TestConvert(unittest.TestCase):
         ("qmark", "SELECT * FROM tbl1 WHERE id=?", ("hello",)),
         ("format", "SELECT * FROM tbl1 WHERE id=%s", ("hello",)),
         ("numeric", "SELECT * FROM tbl1 WHERE id=:1", ("hello",)),
+    ], [
+        ("auto", "SELECT * FROM tbl1 WHERE id=? and val=%s", (10, "hello")),
+        ("qmark", "SELECT * FROM tbl1 WHERE id=? AND val=?", (10, "hello")),
+        ("format", "SELECT * FROM tbl1 WHERE id=%s AND val=%s", (10, "hello")),
+        ("pyformat", "SELECT * FROM tbl1 WHERE id=%(arg0)s AND val=%(arg1)s", {"arg0": 10, "arg1": "hello"}),
+        ("numeric", "SELECT * FROM tbl1 WHERE id=:1 AND val=:2", (10, "hello")),
+        ("named", "SELECT * FROM tbl1 WHERE id=:arg0 AND val=:arg1", {"arg0": 10, "arg1": "hello"}),
     ]]
 
     def test_convert(self):
