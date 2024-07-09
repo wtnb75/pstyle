@@ -1,4 +1,5 @@
 import click
+import functools
 import sqlparse
 from sqlparse.tokens import Token
 from typing import Any, Union, Callable
@@ -15,6 +16,21 @@ _log = getLogger(__name__)
 def cli(ctx):
     if ctx.invoked_subcommand is None:
         print(ctx.get_help())
+
+
+def verbose_option(func):
+    @click.option("--verbose/--quiet", default=None)
+    @functools.wraps(func)
+    def _(verbose, *args, **kwargs):
+        from logging import basicConfig
+        level = "INFO"
+        if verbose:
+            level = "DEBUG"
+        elif verbose is False:
+            level = "WARNING"
+        basicConfig(level=level, format="%(asctime)s %(levelname)s %(message)s")
+        return func(*args, **kwargs)
+    return _
 
 
 dictarg_styles = ["named", "pyformat"]
@@ -241,6 +257,7 @@ class DBWrapper:
 
 
 @cli.command()
+@verbose_option
 @click.option("--from-style", type=click.Choice(styles+["auto"]))
 @click.option("--to-style", type=click.Choice(styles))
 @click.option("--args", multiple=True)
@@ -248,8 +265,6 @@ class DBWrapper:
 @click.option("--normalize/--original", default=True, show_default=True)
 @click.argument("operation")
 def conv(operation, args, kwargs, from_style, to_style, normalize):
-    from logging import basicConfig
-    basicConfig(level="DEBUG", format="%(asctime)s %(levelname)s %(message)s")
     if kwargs:
         conv_arg: dict[str, Any] = json.loads(kwargs)
     else:
