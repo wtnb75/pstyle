@@ -2,6 +2,8 @@ from .convert import Pstyle
 
 
 class CursorWrapper:
+    """wrapper of DB cursor object"""
+
     def __init__(self, cursor, orig_paramstyle: str, paramstyle: str):
         self._cursor = cursor
         self._orig_paramstyle = orig_paramstyle
@@ -28,6 +30,8 @@ class CursorWrapper:
 
 
 class DBWrapper:
+    """wrapper of DB connection object"""
+
     def __init__(self, db, orig_paramstyle: str, paramstyle: str):
         self._db = db
         self.paramstyle = paramstyle

@@ -40,12 +40,15 @@ def verbose_option(func):
 @click.option("--kwargs", type=str, help="json")
 @click.option("--normalize/--original", default=True, show_default=True)
 @click.argument("operation")
-def conv(operation, args, kwargs, from_style, to_style, normalize):
+def convert(operation, args, kwargs, from_style, to_style, normalize):
+    """convert SQL and params with specified paramstyle"""
     if kwargs:
         conv_arg: dict[str, Any] = json.loads(kwargs)
     else:
         conv_arg: tuple[str] = tuple(args)
+    _log.debug("SQL(before): %s, args=%s", operation, conv_arg)
     result_op, result_args = Pstyle.convert(from_style, to_style, operation, conv_arg, normalize)
+    _log.debug("SQL(after): %s, args=%s", result_op, result_args)
     click.echo(f"op: {result_op}")
     click.echo(f"args: {result_args}")
 

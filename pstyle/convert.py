@@ -12,7 +12,7 @@ styles = dictarg_styles + tuplearg_styles
 
 class Pstyle:
     @classmethod
-    def parse_flatten(cls, operation) -> list[list[sqlparse.sql.Token]]:
+    def _parse_flatten(cls, operation) -> list[list[sqlparse.sql.Token]]:
         return [list(x.flatten()) for x in sqlparse.parse(operation)]
 
     @classmethod
@@ -144,7 +144,7 @@ class Pstyle:
                     arg_initializer=dict, normalize: bool = True) -> tuple[str, Union[tuple, dict]]:
         resarg: Union[list, dict] = arg_initializer()
         resop = []
-        for sql in cls.parse_flatten(operation):
+        for sql in cls._parse_flatten(operation):
             for token in sql:
                 if token.ttype == Token.Name.Placeholder:
                     resop.append(fn1(token, args, resarg))
@@ -161,7 +161,18 @@ class Pstyle:
 
     @classmethod
     def convert(cls, from_style: str, to_style: str, operation: str, args: Union[tuple, dict] = (),
-                normalize: bool = True):
+                normalize: bool = True) -> tuple[str, Union[tuple, dict]]:
+        """convert paramstyle
+
+        Args:
+            from_style: [qmark|format|numeric|named|pyformat|auto]
+            to_style: [qmark|format|numeric|named|pyformat]
+            operation: SQL statement with placeholder
+            args: argument to placeholder
+            normalize: output is normalized or not
+        Returns:
+            result_sql, result_args
+        """
         if from_style == to_style:
             return operation, args
         if hasattr(cls, f"_do1_{from_style}2{to_style}"):
