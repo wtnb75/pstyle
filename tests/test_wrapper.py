@@ -1,6 +1,6 @@
 import unittest
 import sqlite3
-from pstyle.wrapper import DBWrapper
+from pstyle.wrapper import DBWrapper, CursorWrapper
 
 
 class TestWrapper(unittest.TestCase):
@@ -43,3 +43,20 @@ class TestWrapper(unittest.TestCase):
         data = cur.fetchone()
         res = dict(zip(keys, data))
         self.assertEqual({"id": 0, "val": "val1"}, res)
+
+    def test_wrap_invalid(self):
+        named = DBWrapper(self.db, sqlite3.paramstyle, "auto")
+        with self.assertRaises(AttributeError):
+            named.hello()
+        cur = named.cursor()
+        with self.assertRaises(AttributeError):
+            cur.executer("hello world")
+
+    def test_wrap_cursor_named(self):
+        cur = CursorWrapper(self.db.cursor(), sqlite3.paramstyle, "named")
+        cur.execute("select * from tbl1 where id=:id", {"id": 1})
+        descr = cur.description
+        data = cur.fetchone()
+        keys = [x[0] for x in descr]
+        res = dict(zip(keys, data))
+        self.assertEqual({"id": 1, "val": "val2"}, res)
