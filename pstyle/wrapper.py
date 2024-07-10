@@ -22,11 +22,12 @@ class CursorWrapper:
                 op = op1
             assert op == op1
             sop.append(p1)
-        if op is not None:
-            return self._cursor.executemany(op, sop)
+        if op is None:
+            return self._cursor.executemany(operation, seq_of_parameters)
+        return self._cursor.executemany(op, sop)
 
-    def __getattr__(self, name, defval=None):
-        return getattr(self._cursor, name, defval)
+    def __getattr__(self, name):
+        return getattr(self._cursor, name)
 
 
 class DBWrapper:
@@ -46,5 +47,5 @@ class DBWrapper:
     def executemany(self, operation, set_of_parameters=[]):
         return self.cursor().executemany(operation, set_of_parameters)
 
-    def __getattr__(self, name, defval=None):
-        return getattr(self._db, name, defval)
+    def __getattr__(self, name):
+        return getattr(self._db, name)
