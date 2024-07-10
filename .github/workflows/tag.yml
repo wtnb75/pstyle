@@ -29,6 +29,7 @@ jobs:
       with:
         output-dir: docs
         module: pstyle
+        other-options: --docformat google
     - uses: docker/setup-qemu-action@v3
     - uses: wtnb75/actions/docker@main
       with:
