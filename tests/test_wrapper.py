@@ -1,6 +1,6 @@
 import unittest
 import sqlite3
-from pstyle.main import DBWrapper
+from pstyle.wrapper import DBWrapper
 
 
 class TestWrapper(unittest.TestCase):

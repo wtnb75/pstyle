@@ -1,5 +1,5 @@
 import unittest
-from pstyle.main import Pstyle
+from pstyle.convert import Pstyle
 import itertools
 
 
@@ -72,23 +72,20 @@ class TestConvert(unittest.TestCase):
     ]]
 
     def test_convert(self):
-        pst = Pstyle()
         for data in self.testdata_map:
             for v1, v2 in itertools.permutations(data, 2):
-                resop, resarg = pst.convert(v1[0], v2[0], v1[1], v1[2])
+                resop, resarg = Pstyle.convert(v1[0], v2[0], v1[1], v1[2])
                 self.assertEqual(v2[1], resop, f"sql {v1[0]} to {v2[0]}")
                 self.assertEqual(v2[2], resarg, f"arg {v1[0]} to {v2[0]}")
 
     def test_convert2(self):
-        pst = Pstyle()
         for data in self.testdata_map2:
             v1 = data[0]
             for v2 in data[1:]:
-                resop, resarg = pst.convert(v1[0], v2[0], v1[1], v1[2])
+                resop, resarg = Pstyle.convert(v1[0], v2[0], v1[1], v1[2])
                 self.assertEqual(v2[1], resop, f"sql {v1[0]} to {v2[0]}")
                 self.assertEqual(v2[2], resarg, f"arg {v1[0]} to {v2[0]}")
 
     def test_convert_notimpl(self):
-        pst = Pstyle()
         with self.assertRaises(NotImplementedError):
-            pst.convert("qmark", "auto", "SELECT * from t WHERE val=?", ("hello",))
+            Pstyle.convert("qmark", "auto", "SELECT * from t WHERE val=?", ("hello",))
