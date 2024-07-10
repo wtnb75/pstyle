@@ -60,3 +60,8 @@ class TestWrapper(unittest.TestCase):
         keys = [x[0] for x in descr]
         res = dict(zip(keys, data))
         self.assertEqual({"id": 1, "val": "val2"}, res)
+
+    def test_wrap_invalid_sql(self):
+        named = DBWrapper(self.db, sqlite3.paramstyle, "auto")
+        with self.assertRaises(sqlite3.OperationalError):
+            named.execute("invalid sql")
