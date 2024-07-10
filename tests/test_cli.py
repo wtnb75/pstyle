@@ -18,10 +18,10 @@ class TestCLI(unittest.TestCase):
         self.assertIsNone(res.exception)
         self.assertIn("--version", res.output)
         self.assertIn("--help", res.output)
-        self.assertIn("conv", res.output)
+        self.assertIn("convert", res.output)
 
     def test_conv_help(self):
-        res = CliRunner().invoke(cli, ["conv", "--help"])
+        res = CliRunner().invoke(cli, ["convert", "--help"])
         if res.exception:
             raise res.exception
         self.assertEqual(0, res.exit_code)
@@ -32,7 +32,7 @@ class TestCLI(unittest.TestCase):
 
     def test_conv_format2qmark(self):
         res = CliRunner().invoke(cli, [
-            "conv", "--from-style", "format", "--to-style", "qmark", "--args", "1",
+            "convert", "--from-style", "format", "--to-style", "qmark", "--args", "1",
             "select * from tbl1 where id=%s"])
         if res.exception:
             raise res.exception
@@ -42,7 +42,7 @@ class TestCLI(unittest.TestCase):
 
     def test_conv_format2qmark_original(self):
         res = CliRunner().invoke(cli, [
-            "conv", "--from-style", "format", "--to-style", "qmark", "--args", "1",
+            "convert", "--from-style", "format", "--to-style", "qmark", "--args", "1",
             "select * from tbl1 where id=%s", "--original"])
         if res.exception:
             raise res.exception
