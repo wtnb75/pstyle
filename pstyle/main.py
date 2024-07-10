@@ -163,9 +163,7 @@ class Pstyle:
         resop = []
         for sql in self.parse_flatten(operation):
             for token in sql:
-                _log.debug("token %s / %s", token.ttype, token.value)
                 if token.ttype == Token.Name.Placeholder:
-                    _log.debug("placeholder: %s", token.value)
                     resop.append(fn1(token, args, resarg))
                 else:
                     if normalize:
@@ -174,18 +172,15 @@ class Pstyle:
                         resop.append(token.value)
         if isinstance(resarg, list):
             resarg = tuple(resarg)
-        return "".join(resop), resarg
+        resop_str = "".join(resop)
+        _log.debug("any2any: %s -> %s, arg=%s", repr(operation), repr(resop_str), resarg)
+        return resop_str, resarg
 
     def convert(self, from_style: str, to_style: str, operation: str, args: Union[tuple, dict] = (),
                 normalize: bool = True):
         if from_style == to_style:
             return operation, args
-        if hasattr(self, f"do_{from_style}2{to_style}"):
-            fn = getattr(self, f"do_{from_style}2{to_style}")
-            if callable(fn):
-                _log.debug("do: %s to %s", from_style, to_style)
-                return fn(operation, args)
-        elif hasattr(self, f"do1_{from_style}2{to_style}"):
+        if hasattr(self, f"do1_{from_style}2{to_style}"):
             fn = getattr(self, f"do1_{from_style}2{to_style}")
             if callable(fn):
                 if to_style in dictarg_styles:
@@ -194,13 +189,6 @@ class Pstyle:
                 else:
                     _log.debug("do1(tuple): %s to %s", from_style, to_style)
                     return self.do_any2any(operation, fn, args, list, normalize)
-        elif hasattr(self, f"do_{from_style}2qmark") and hasattr(self, f"do_qmark2{to_style}"):
-            fn1 = getattr(self, f"do_{from_style}2qmark")
-            fn2 = getattr(self, f"do_qmark2{to_style}")
-            if callable(fn1) and callable(fn2):
-                op, a = fn1(operation, args)
-                _log.debug("qmark: op=%s, arg=%s", op, a)
-                return fn2(op, a)
         elif hasattr(self, f"do1_{from_style}2qmark") and hasattr(self, f"do1_qmark2{to_style}"):
             fn1 = getattr(self, f"do1_{from_style}2qmark")
             fn2 = getattr(self, f"do1_qmark2{to_style}")
@@ -251,6 +239,12 @@ class DBWrapper:
 
     def cursor(self):
         return CursorWrapper(self._db.cursor(), self._orig_paramstyle, self.paramstyle)
+
+    def execute(self, operation, parameters=()):
+        return self.cursor().execute(operation, parameters)
+
+    def executemany(self, operation, set_of_parameters=[]):
+        return self.cursor().executemany(operation, set_of_parameters)
 
     def __getattr__(self, name, defval=None):
         return getattr(self._db, name, defval)

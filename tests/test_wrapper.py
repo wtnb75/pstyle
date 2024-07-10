@@ -33,3 +33,13 @@ class TestWrapper(unittest.TestCase):
         data = cur.fetchall()
         res = [dict(zip(keys, x)) for x in data]
         self.assertEqual([{"id": 0, "val": "val1"}, {"id": 1, "val": "val2"}], res)
+
+    def test_wrap_auto(self):
+        named = DBWrapper(self.db, sqlite3.paramstyle, "auto")
+        cur = named.cursor()
+        cur.execute("select * from tbl1 where id=:1 limit %s", (0, 1))
+        descr = cur.description
+        keys = [x[0] for x in descr]
+        data = cur.fetchone()
+        res = dict(zip(keys, data))
+        self.assertEqual({"id": 0, "val": "val1"}, res)
