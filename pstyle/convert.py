@@ -31,11 +31,16 @@ class Pstyle:
         return token.value
 
     @classmethod
-    def _do1_named2qmark(cls, token: sqlparse.sql.Token, from_args: dict, to_args: list) -> str:
+    def _do1_named2qmark(cls, token: sqlparse.sql.Token, from_args: Union[tuple, dict], to_args: list) -> str:
         if token.value.startswith(":"):
-            name = token.value[1:]
-            to_args.append(from_args.get(name))
-            return "?"
+            if isinstance(from_args, dict):
+                name = token.value[1:]
+                to_args.append(from_args.get(name))
+                return "?"
+            else:
+                idx = int(token.value[1:])
+                to_args.append(from_args[idx-1])
+                return "?"
         return token.value
 
     @classmethod
@@ -69,26 +74,41 @@ class Pstyle:
         return token.value
 
     @classmethod
-    def _do1_pyformat2named(cls, token: sqlparse.sql.Token, from_args: dict, to_args: dict) -> str:
-        if token.value.startswith("%("):
+    def _do1_pyformat2named(cls, token: sqlparse.sql.Token, from_args: Union[tuple, dict], to_args: dict) -> str:
+        if isinstance(from_args, dict) and token.value.startswith("%("):
             name = token.value[2:].split(")")[0]
             to_args[name] = from_args[name]
+            return f":{name}"
+        elif token.value.startswith("%"):
+            idx = len(to_args)
+            name = f"arg{len(to_args)}"
+            to_args[name] = from_args[idx]
             return f":{name}"
         return token.value
 
     @classmethod
-    def _do1_named2pyformat(cls, token: sqlparse.sql.Token, from_args: dict, to_args: dict) -> str:
+    def _do1_named2pyformat(cls, token: sqlparse.sql.Token, from_args: Union[tuple, dict], to_args: dict) -> str:
         if token.value.startswith(":"):
-            name = token.value[1:]
-            to_args[name] = from_args[name]
-            return f"%({name})s"
+            if isinstance(from_args, dict):
+                name = token.value[1:]
+                to_args[name] = from_args[name]
+                return f"%({name})s"
+            else:
+                idx = int(token.value[1:])
+                name = f"arg{len(to_args)}"
+                to_args[name] = from_args[idx-1]  # 1-origin
+                return f"%({name})s"
         return token.value
 
     @classmethod
-    def _do1_pyformat2qmark(cls, token: sqlparse.sql.Token, from_args: dict, to_args: list) -> str:
+    def _do1_pyformat2qmark(cls, token: sqlparse.sql.Token, from_args: Union[tuple, dict], to_args: list) -> str:
         if token.value.startswith("%("):
             name = token.value[2:].split(")")[0]
             to_args.append(from_args[name])
+            return "?"
+        elif token.value.startswith("%"):
+            idx = len(to_args)
+            to_args.append(from_args[idx])
             return "?"
         return token.value
 

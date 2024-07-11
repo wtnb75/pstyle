@@ -69,7 +69,19 @@ class TestConvert(unittest.TestCase):
         ("pyformat", "SELECT * FROM tbl1 WHERE id=%(arg0)s AND val=%(arg1)s", {"arg0": 10, "arg1": "hello"}),
         ("numeric", "SELECT * FROM tbl1 WHERE id=:1 AND val=:2", (10, "hello")),
         ("named", "SELECT * FROM tbl1 WHERE id=:arg0 AND val=:arg1", {"arg0": 10, "arg1": "hello"}),
-    ]]
+    ], [
+        ("named", "SELECT * FROM tbl1 WHERE id=:1", ("hello",)),
+        ("pyformat", "SELECT * FROM tbl1 WHERE id=%(arg0)s", {"arg0": "hello"}),
+        ("qmark", "SELECT * FROM tbl1 WHERE id=?", ("hello",)),
+        ("format", "SELECT * FROM tbl1 WHERE id=%s", ("hello",)),
+        ("numeric", "SELECT * FROM tbl1 WHERE id=:1", ("hello",)),
+    ], [
+        ("pyformat", "SELECT * FROM tbl1 WHERE id=%s", ("hello",)),
+        ("qmark", "SELECT * FROM tbl1 WHERE id=?", ("hello",)),
+        ("format", "SELECT * FROM tbl1 WHERE id=%s", ("hello",)),
+        ("numeric", "SELECT * FROM tbl1 WHERE id=:1", ("hello",)),
+        ("named", "SELECT * FROM tbl1 WHERE id=:arg0", {"arg0": "hello"}),
+    ],]
 
     def test_convert(self):
         for data in self.testdata_map:
