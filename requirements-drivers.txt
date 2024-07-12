@@ -1,0 +1,12 @@
+duckdb
+firebird-driver
+mysql-connector-python
+oracledb
+psycopg2-binary
+py-postgresql
+pydrda
+pymonetdb
+pymssql
+pyodbc
+pyhive
+ipython
