@@ -78,6 +78,19 @@ class TestCLI(unittest.TestCase):
             si.assert_called_once_with(
                 argv=[], user_ns=expected_ns)
 
+    @unittest.skipIf(has_ipython, "ipython found")
+    def test_try_db_fallback(self):
+        with patch("code.InteractiveConsole") as ci:
+            CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
+            expected_ns = {
+                "dsn": "sqlite3://:memory:",
+                "db": ANY, "wrapped": ANY,
+                "paramstyle": ("qmark", "auto"),
+                "version": ANY,
+            }
+            ci.assert_called_once_with(locals=expected_ns)
+            ci.return_value.interact.assert_called_once_with()
+
     def test_try_db_code(self):
         with patch("code.InteractiveConsole") as ci:
             CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
