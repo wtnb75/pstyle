@@ -1,6 +1,13 @@
 import unittest
+from unittest.mock import patch, ANY
 from click.testing import CliRunner
 from pstyle.main import cli
+
+try:
+    import IPython   # noqa
+    has_ipython = True
+except ImportError:
+    has_ipython = False
 
 
 class TestCLI(unittest.TestCase):
@@ -49,3 +56,55 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(0, res.exit_code)
         self.assertIsNone(res.exception)
         self.assertIn("select * from tbl1 where id=?", res.output)
+
+    def test_list_drivers(self):
+        res = CliRunner().invoke(cli, ["list-drivers"])
+        if res.exception:
+            raise res.exception
+        self.assertEqual(0, res.exit_code)
+        self.assertIsNone(res.exception)
+        self.assertIn("sqlite3", res.output)
+
+    @unittest.skipUnless(has_ipython, "ipython not found")
+    def test_try_db(self):
+        with patch("IPython.start_ipython") as si:
+            CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:"])
+            expected_ns = {
+                "dsn": "sqlite3://:memory:",
+                "db": ANY, "wrapped": ANY,
+                "paramstyle": ("qmark", "auto"),
+                "version": ANY,
+            }
+            si.assert_called_once_with(
+                argv=[], user_ns=expected_ns)
+
+    @unittest.skipIf(has_ipython, "ipython found")
+    def test_try_db_fallback(self):
+        with patch("code.InteractiveConsole") as ci:
+            CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
+            expected_ns = {
+                "dsn": "sqlite3://:memory:",
+                "db": ANY, "wrapped": ANY,
+                "paramstyle": ("qmark", "auto"),
+                "version": ANY,
+            }
+            ci.assert_called_once_with(locals=expected_ns)
+            ci.return_value.interact.assert_called_once_with()
+
+    def test_try_db_code(self):
+        with patch("code.InteractiveConsole") as ci:
+            CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
+            expected_ns = {
+                "dsn": "sqlite3://:memory:",
+                "db": ANY, "wrapped": ANY,
+                "paramstyle": ("qmark", "auto"),
+                "version": ANY,
+            }
+            ci.assert_called_once_with(locals=expected_ns)
+            ci.return_value.interact.assert_called_once_with()
+
+    def test_try_db_invalid(self):
+        res = CliRunner().invoke(cli, ["try-db", "invalid://localhost/db"])
+        self.assertIsNotNone(res.exception)
+        self.assertEqual(2, res.exit_code)
+        self.assertIn("invalid not found in ", res.output)

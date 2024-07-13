@@ -1,0 +1,49 @@
+services:
+  mysql:  # [mariadb|mysql]://dbuser:dbpass@localhost:3306/db
+    image: mysql:8
+    environment:
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass
+      MYSQL_DATABASE: db
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+    ports:
+    - "3306:3306"
+  mariadb:  # [mariadb|mysql]://dbuser:dbpass@localhost:3307/db
+    image: mariadb:11
+    environment:
+      MARIADB_USER: dbuser
+      MARIADB_PASSWORD: dbpass
+      MARIADB_DATABASE: db
+      MARIADB_RANDOM_ROOT_PASSWORD: 'yes'
+    ports:
+    - "3307:3306"
+  postgres:  # postgres://dbuser:dbpass@localhost:5432/db
+    image: postgres:16
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbpass
+      POSTGRES_DB: db
+    ports:
+    - "5432:5432"
+  firebird:  # firebird://dbuser:dbpass@localhost:3050/db
+    image: jacobalberty/firebird:3.0
+    environment:
+      FIREBIRD_USER: dbuser
+      FIREBIRD_PASSWORD: dbpass
+      FIREBIRD_DATABASE: db
+    ports:
+    - "3050:3050"
+  derby:   # drda://localhost:1527/db
+    image: datagrip/derby-server:10.12
+    ports:
+    - "1527:1527"
+  monetdb:  # monetdb://monetdb:monetdb@localhost:50000/db
+    image: monetdb/monetdb:latest
+    environment:
+      MDB_DB_ADMIN_PASS: monetdb
+      MDB_CREATE_DBS: db
+    ports:
+    - "50000:50000"
+  # others:
+  #     sqlite3://:memory:
+  #     duckdb://:memory:

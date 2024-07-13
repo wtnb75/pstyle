@@ -1,10 +1,12 @@
 import click
 import functools
 import json
+from urllib.parse import urlparse
 from typing import Any
 from logging import getLogger
 from .version import VERSION
 from .convert import Pstyle, styles
+from .load_drivers import dbapis
 
 _log = getLogger(__name__)
 
@@ -51,6 +53,44 @@ def convert(operation, args, kwargs, from_style, to_style, normalize):
     _log.debug("SQL(after): %s, args=%s", result_op, result_args)
     click.echo(f"op: {result_op}")
     click.echo(f"args: {result_args}")
+
+
+@cli.command()
+@verbose_option
+def list_drivers():
+    click.echo(json.dumps(list(dbapis.keys())))
+
+
+@cli.command()
+@verbose_option
+@click.option("--style", type=click.Choice(styles+["auto"]), default="auto", show_default=True)
+@click.option("--normalize/--original", default=True, show_default=True)
+@click.option("--ipython/--code", default=True, show_default=True)
+@click.argument("dsn")
+def try_db(dsn, style, normalize, ipython):
+    if ipython:
+        try:
+            import IPython
+        except ImportError:
+            _log.warning("cannot import ipython")
+            ipython = False
+    if not ipython:
+        import readline  # noqa
+        import code
+    from .wrapper import DBWrapper
+    parsed = urlparse(dsn)
+    if parsed.scheme not in dbapis:
+        raise click.BadArgumentUsage(f"{parsed.scheme} not found in {list(dbapis.keys())}")
+    paramstyle, connector = dbapis.get(parsed.scheme)
+    db = connector(parsed)
+    wrapped = DBWrapper(db, paramstyle, style, normalize)
+    click.echo(f"db({paramstyle}): db.execute(...)")
+    click.echo(f"wrapped({style}): wrapped.execute(...)")
+    names = {"dsn": dsn, "db": db, "wrapped": wrapped, "paramstyle": (paramstyle, style), "version": VERSION}
+    if ipython:
+        IPython.start_ipython(argv=[], user_ns=names)
+    else:
+        code.InteractiveConsole(locals=names).interact()
 
 
 if __name__ == "__main__":
