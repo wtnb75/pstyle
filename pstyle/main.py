@@ -69,8 +69,12 @@ def list_drivers():
 @click.argument("dsn")
 def try_db(dsn, style, normalize, ipython):
     if ipython:
-        import IPython
-    else:
+        try:
+            import IPython
+        except ImportError:
+            _log.warning("cannot import ipython")
+            ipython = False
+    if not ipython:
         import readline  # noqa
         import code
     from .wrapper import DBWrapper

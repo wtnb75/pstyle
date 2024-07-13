@@ -3,6 +3,12 @@ from unittest.mock import patch, ANY
 from click.testing import CliRunner
 from pstyle.main import cli
 
+try:
+    import IPython   # noqa
+    has_ipython = True
+except ImportError:
+    has_ipython = False
+
 
 class TestCLI(unittest.TestCase):
     def setUp(self):
@@ -59,6 +65,7 @@ class TestCLI(unittest.TestCase):
         self.assertIsNone(res.exception)
         self.assertIn("sqlite3", res.output)
 
+    @unittest.skipUnless(has_ipython, "ipython not found")
     def test_try_db(self):
         with patch("IPython.start_ipython") as si:
             CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:"])
