@@ -1,5 +1,6 @@
+from collections.abc import Callable
+from typing import Any
 from urllib.parse import ParseResult, parse_qsl
-from typing import Any, Callable
 
 dbapis: dict[str, tuple[str, Callable[[ParseResult], Any]]] = {}
 
@@ -7,7 +8,8 @@ try:
     import sqlite3
 
     def sqlite3_connect(u: ParseResult):
-        return sqlite3.connect(u.netloc+u.path)
+        return sqlite3.connect(u.netloc + u.path)
+
     dbapis["sqlite3"] = (sqlite3.paramstyle, sqlite3_connect)
 except ImportError:
     pass
@@ -16,8 +18,13 @@ try:
 
     def mysql_connect(u: ParseResult):
         return mysql.connector.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            database=u.path.lstrip("/"))
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            database=u.path.lstrip("/"),
+        )
+
     dbapis["mysql"] = (mysql.connector.paramstyle, mysql_connect)
 except ImportError:
     pass
@@ -26,8 +33,13 @@ try:
 
     def mariadb_connect(u: ParseResult):
         return mariadb.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            database=u.path.lstrip("/"))
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            database=u.path.lstrip("/"),
+        )
+
     dbapis["mariadb"] = (mariadb.paramstyle, mariadb_connect)
 except ImportError:
     pass
@@ -36,8 +48,13 @@ try:
 
     def psql_connect(u: ParseResult):
         return psycopg2.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            dbname=u.path.lstrip("/"))
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            dbname=u.path.lstrip("/"),
+        )
+
     dbapis["postgres"] = (psycopg2.paramstyle, psql_connect)
 except ImportError:
     pass
@@ -47,6 +64,7 @@ try:
     def odbc_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
         return pyodbc.connect(u.path.lstrip("/"), **params)
+
     dbapis["odbc"] = (pyodbc.paramstyle, odbc_connect)
 except ImportError:
     pass
@@ -56,8 +74,14 @@ try:
     def mssql_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
         return pymssql.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            database=u.path.lstrip("/"), **params)
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            database=u.path.lstrip("/"),
+            **params,
+        )
+
     dbapis["mssql"] = (pymssql.paramstyle, mssql_connect)
 except ImportError:
     pass
@@ -67,8 +91,14 @@ try:
     def oracle_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
         return oracledb.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            service_name=u.path.lstrip("/"), **params)
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            service_name=u.path.lstrip("/"),
+            **params,
+        )
+
     dbapis["oracle"] = (oracledb.paramstyle, oracle_connect)
 except ImportError:
     pass
@@ -77,7 +107,8 @@ try:
 
     def duckdb_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
-        return duckdb.connect(u.netloc+u.path, config=params)
+        return duckdb.connect(u.netloc + u.path, config=params)
+
     dbapis["duckdb"] = (duckdb.paramstyle, duckdb_connect)
 except ImportError:
     pass
@@ -86,7 +117,11 @@ try:
 
     def firebird_connect(u: ParseResult):
         return firebird.driver.connect(
-            database=f"{u.hostname}:{u.port}{u.path}", user=u.username, password=u.password)
+            database=f"{u.hostname}:{u.port}{u.path}",
+            user=u.username,
+            password=u.password,
+        )
+
     dbapis["firebird"] = (firebird.driver.paramstyle, firebird_connect)
 except ImportError:
     pass
@@ -96,8 +131,13 @@ try:
 
     def drda_connect(u: ParseResult):
         return drda.connect(
-            host=u.hostname, port=u.port, user=u.username, password=u.password,
-            database=u.path.lstrip("/")+";create=true")
+            host=u.hostname,
+            port=u.port,
+            user=u.username,
+            password=u.password,
+            database=u.path.lstrip("/") + ";create=true",
+        )
+
     dbapis["drda"] = (drda.paramstyle, drda_connect)
 except ImportError:
     pass
@@ -106,8 +146,13 @@ try:
 
     def monetdb_connect(u: ParseResult):
         return pymonetdb.connect(
-            hostname=u.hostname, port=u.port, username=u.username, password=u.password,
-            database=u.path.lstrip("/"))
+            hostname=u.hostname,
+            port=u.port,
+            username=u.username,
+            password=u.password,
+            database=u.path.lstrip("/"),
+        )
+
     dbapis["monetdb"] = (pymonetdb.paramstyle, monetdb_connect)
 except ImportError:
     pass
@@ -117,8 +162,14 @@ try:
     def hive_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
         return pyhive.hive.connect(
-            host=u.hostname, port=u.port, username=u.username, password=u.password,
-            database=u.path.lstrip("/"), **params)
+            host=u.hostname,
+            port=u.port,
+            username=u.username,
+            password=u.password,
+            database=u.path.lstrip("/"),
+            **params,
+        )
+
     dbapis["hive"] = (pyhive.hive.paramstyle, hive_connect)
 except ImportError:
     pass
@@ -128,8 +179,14 @@ try:
     def presto_connect(u: ParseResult):
         params = dict(parse_qsl(u.query))
         return pyhive.presto.connect(
-            host=u.hostname, port=u.port, username=u.username, password=u.password,
-            schema=u.path.lstrip("/"), **params)
+            host=u.hostname,
+            port=u.port,
+            username=u.username,
+            password=u.password,
+            schema=u.path.lstrip("/"),
+            **params,
+        )
+
     dbapis["presto"] = (pyhive.presto.paramstyle, presto_connect)
 except ImportError:
     pass

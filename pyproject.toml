@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pstyle"
+dynamic = ["version"]
+description = "python DB-API paramstyle converter"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "Watanabe Takashi", email = "wtnb75@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Documentation",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "click",
+    "sqlparse",
+]
+
+[project.optional-dependencies]
+drivers = [
+    "duckdb",
+    "firebird-driver",
+    "mysql-connector-python",
+    "oracledb",
+    "psycopg2-binary",
+    "py-postgresql",
+    "pydrda",
+    "pymonetdb",
+    "pymssql",
+    "pyodbc",
+    "pyhive",
+    "ipython",
+]
+
+[project.scripts]
+pstyle = "pstyle.main:cli"
+
+[project.urls]
+Homepage = "https://github.com/wtnb75/pstyle"
+
+[tool.hatch.version]
+path = "pstyle/version.py"
+pattern = "VERSION = ['\"](?P<version>[^'\"]+)['\"]"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pstyle"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-github-actions-annotate-failures",
+    "ruff",
+    "pdoc",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# RUF012: unittest.TestCase class attributes here are read-only fixture data
+# (never mutated), not function default arguments, so they don't share the
+# B006 mutable-default-argument bug class.
+"tests/*" = ["RUF012"]
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+addopts = "--cov-report=html:cover --cov-report=term --cov-branch --cov-reset --cov=pstyle --doctest-modules --ignore=data/"

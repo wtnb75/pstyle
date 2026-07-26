@@ -1,7 +1,8 @@
+import sqlite3
 import unittest
 from unittest.mock import patch
-import sqlite3
-from pstyle.wrapper import DBWrapper, CursorWrapper
+
+from pstyle.wrapper import CursorWrapper, DBWrapper
 
 
 class TestWrapper(unittest.TestCase):
@@ -9,7 +10,9 @@ class TestWrapper(unittest.TestCase):
         self.db = sqlite3.connect(":memory:")
         cur = self.db.cursor()
         cur.execute("create table tbl1 (id integer, val varchar)")
-        cur.execute("insert into tbl1 (id, val) values (?, ?), (?, ?)", (0, "val1", 1, "val2"))
+        cur.execute(
+            "insert into tbl1 (id, val) values (?, ?), (?, ?)", (0, "val1", 1, "val2")
+        )
         cur.close()
 
     def tearDown(self):
@@ -79,8 +82,11 @@ class TestWrapper(unittest.TestCase):
     def test_wrap_many(self):
         named = DBWrapper(self.db, sqlite3.paramstyle, "format")
         cur = named.cursor()
-        cur.executemany("insert into tbl1 (id, val) values (%s, %s)", [(2, "val3"), (3, "val4"), (5, "val5")])
-        cur.execute("select * from tbl1 where id=%s", (3, ))
+        cur.executemany(
+            "insert into tbl1 (id, val) values (%s, %s)",
+            [(2, "val3"), (3, "val4"), (5, "val5")],
+        )
+        cur.execute("select * from tbl1 where id=%s", (3,))
         descr = cur.description
         keys = [x[0] for x in descr]
         data = cur.fetchone()
@@ -90,8 +96,11 @@ class TestWrapper(unittest.TestCase):
 
     def test_wrap_many2(self):
         named = DBWrapper(self.db, sqlite3.paramstyle, "format")
-        named.executemany("insert into tbl1 (id, val) values (%s, %s)", [(2, "val3"), (3, "val4"), (5, "val5")])
-        cur = named.execute("select * from tbl1 where id=%s", (3, ))
+        named.executemany(
+            "insert into tbl1 (id, val) values (%s, %s)",
+            [(2, "val3"), (3, "val4"), (5, "val5")],
+        )
+        cur = named.execute("select * from tbl1 where id=%s", (3,))
         descr = cur.description
         keys = [x[0] for x in descr]
         data = cur.fetchone()
@@ -104,9 +113,11 @@ class TestWrapper(unittest.TestCase):
         cur = named.cursor()
         with patch.object(cur, "_cursor") as cur:
             cur.executemany("insert into tbl1 (id, val) values (3, 'val4')", [])
-            cur.executemany.assert_called_once_with("insert into tbl1 (id, val) values (3, 'val4')", [])
+            cur.executemany.assert_called_once_with(
+                "insert into tbl1 (id, val) values (3, 'val4')", []
+            )
         cur2 = named.cursor()
         cur2.executemany("insert into tbl1 (id, val) values (3, 'val4')", [])
-        cur2.execute("select * from tbl1 where id=%s", (3, ))
+        cur2.execute("select * from tbl1 where id=%s", (3,))
         data = cur2.fetchone()
         self.assertIsNone(data)

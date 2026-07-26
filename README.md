@@ -78,9 +78,16 @@ import sqlite3
 from pstyle.convert import Pstyle
 
 db = sqlite3.connect(":memory:")
-print("paramstyle:", sqlite3.paramstyle)    # qmark
+print("paramstyle:", sqlite3.paramstyle)  # qmark
 cursor = db.cursor()
-cursor.execute(*Pstyle.convert("numeric", sqlite3.paramstyle, "select * from tbl1 where id=:2 and val=:1", ("val1", 1)))
+cursor.execute(
+    *Pstyle.convert(
+        "numeric",
+        sqlite3.paramstyle,
+        "select * from tbl1 where id=:2 and val=:1",
+        ("val1", 1),
+    )
+)
 # -> cursor.execute("SELECT * FROM tbl1 WHERE id=? AND val=?", (1, "val1"))
 ```
 
@@ -91,7 +98,7 @@ import sqlite3
 from pstyle.wrapper import DBWrapper
 
 db = sqlite3.connect(":memory:")
-print("paramstyle:", sqlite3.paramstyle)    # qmark
+print("paramstyle:", sqlite3.paramstyle)  # qmark
 db2 = DBWrapper(db, sqlite3.paramstyle, "numeric")
 cursor = db2.cursor()
 cursor.execute("select * from tbl1 where id=:2 and val=:1", ("val1", 1))
@@ -106,7 +113,7 @@ import sqlite3
 from pstyle.wrapper import CursorWrapper
 
 db = sqlite3.connect(":memory:")
-print("paramstyle:", sqlite3.paramstyle)    # qmark
+print("paramstyle:", sqlite3.paramstyle)  # qmark
 cursor = CursorWrapper(db.cursor(), sqlite3.paramstyle, "numeric")
 cursor.execute("select * from tbl1 where id=:2 and val=:1", ("val1", 1))
 # -> SELECT * FROM tbl1 WHERE id=? AND val=?, (1, "val1")
