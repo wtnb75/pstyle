@@ -1,10 +1,13 @@
 import unittest
-from unittest.mock import patch, ANY
+from unittest.mock import ANY, patch
+
 from click.testing import CliRunner
+
 from pstyle.main import cli
 
 try:
-    import IPython   # noqa
+    import IPython  # noqa
+
     has_ipython = True
 except ImportError:
     has_ipython = False
@@ -38,9 +41,19 @@ class TestCLI(unittest.TestCase):
         self.assertIn("--normalize", res.output)
 
     def test_conv_format2qmark(self):
-        res = CliRunner().invoke(cli, [
-            "convert", "--from-style", "format", "--to-style", "qmark", "--args", "1",
-            "select * from tbl1 where id=%s"])
+        res = CliRunner().invoke(
+            cli,
+            [
+                "convert",
+                "--from-style",
+                "format",
+                "--to-style",
+                "qmark",
+                "--args",
+                "1",
+                "select * from tbl1 where id=%s",
+            ],
+        )
         if res.exception:
             raise res.exception
         self.assertEqual(0, res.exit_code)
@@ -48,9 +61,20 @@ class TestCLI(unittest.TestCase):
         self.assertIn("SELECT * FROM tbl1 WHERE id=?", res.output)
 
     def test_conv_format2qmark_original(self):
-        res = CliRunner().invoke(cli, [
-            "convert", "--from-style", "format", "--to-style", "qmark", "--args", "1",
-            "select * from tbl1 where id=%s", "--original"])
+        res = CliRunner().invoke(
+            cli,
+            [
+                "convert",
+                "--from-style",
+                "format",
+                "--to-style",
+                "qmark",
+                "--args",
+                "1",
+                "select * from tbl1 where id=%s",
+                "--original",
+            ],
+        )
         if res.exception:
             raise res.exception
         self.assertEqual(0, res.exit_code)
@@ -71,12 +95,12 @@ class TestCLI(unittest.TestCase):
             CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:"])
             expected_ns = {
                 "dsn": "sqlite3://:memory:",
-                "db": ANY, "wrapped": ANY,
+                "db": ANY,
+                "wrapped": ANY,
                 "paramstyle": ("qmark", "auto"),
                 "version": ANY,
             }
-            si.assert_called_once_with(
-                argv=[], user_ns=expected_ns)
+            si.assert_called_once_with(argv=[], user_ns=expected_ns)
 
     @unittest.skipIf(has_ipython, "ipython found")
     def test_try_db_fallback(self):
@@ -84,7 +108,8 @@ class TestCLI(unittest.TestCase):
             CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
             expected_ns = {
                 "dsn": "sqlite3://:memory:",
-                "db": ANY, "wrapped": ANY,
+                "db": ANY,
+                "wrapped": ANY,
                 "paramstyle": ("qmark", "auto"),
                 "version": ANY,
             }
@@ -96,7 +121,8 @@ class TestCLI(unittest.TestCase):
             CliRunner().invoke(cli, ["try-db", "sqlite3://:memory:", "--code"])
             expected_ns = {
                 "dsn": "sqlite3://:memory:",
-                "db": ANY, "wrapped": ANY,
+                "db": ANY,
+                "wrapped": ANY,
                 "paramstyle": ("qmark", "auto"),
                 "version": ANY,
             }
